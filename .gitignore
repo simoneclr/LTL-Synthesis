@@ -9,3 +9,4 @@ buildNumber.properties
 /.idea
 *.gv
 *.iml
+src/test/

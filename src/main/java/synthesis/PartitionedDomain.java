@@ -43,7 +43,7 @@ public class PartitionedDomain {
 	@Override
 	public String toString(){
 		return "Environment: " + this.environmentDomain.toString() +
-						"\nSystem: " + this.systemDomain.toString();
+						"; System: " + this.systemDomain.toString();
 	}
 
 	public HashSet<LTLfLocalVar> getCompleteDomain(){

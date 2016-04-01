@@ -25,6 +25,27 @@ public class PartitionedDomain {
 		this.systemDomain = systemDomain;
 	}
 
+	@Override
+	public boolean equals(Object o){
+		if (o != null){
+			if (o instanceof PartitionedDomain){
+				PartitionedDomain other = (PartitionedDomain) o;
+
+				return (this.getClass().equals(other.getClass())
+								&& this.environmentDomain.equals(other.getEnvironmentDomain())
+								&& this.systemDomain.equals(other.getSystemDomain()));
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public String toString(){
+		return "Environment: " + this.environmentDomain.toString() +
+						"\nSystem: " + this.systemDomain.toString();
+	}
+
 	public HashSet<LTLfLocalVar> getCompleteDomain(){
 		HashSet<LTLfLocalVar> res = new HashSet<>();
 		res.addAll(this.environmentDomain);

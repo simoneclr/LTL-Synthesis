@@ -12,11 +12,11 @@ import rationals.NoSuchStateException;
 import rationals.State;
 import rationals.Transition;
 import rationals.transformations.Reducer;
-import synthesis.PartitionedDomain;
-import synthesis.PartitionedWorldLabel;
-import synthesis.SynthEmptyTrace;
-import synthesis.SynthTransitionLabel;
+import synthesis.*;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -103,6 +103,22 @@ public class AutomatonUtils {
 		return res;
 	}
 
+	public static void writeAutomatonGv(Automaton automaton, String fileName){
+		FileOutputStream fos = null;
+
+		try {
+			fos = new FileOutputStream(fileName);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		PrintStream ps = new PrintStream(fos);
+		ps.println(utils.AutomatonUtils.toDot(automaton));
+		ps.flush();
+		ps.close();
+	}
+
 	private static PartitionedWorldLabel partitionPossibleWorld(PossibleWorldWrap pw, PartitionedDomain domain){
 		HashSet<LTLfLocalVar> environment = new HashSet<>();
 		HashSet<LTLfLocalVar> system = new HashSet<>();
@@ -121,5 +137,4 @@ public class AutomatonUtils {
 
 		return new PartitionedWorldLabel(environment, system);
 	}
-
 }

@@ -12,15 +12,15 @@ import java.util.HashSet;
  */
 public class PartitionedDomain {
 
-	private HashSet<LTLfLocalVar> environmentDomain;
-	private HashSet<LTLfLocalVar> systemDomain;
+	private PropositionSet environmentDomain;
+	private PropositionSet systemDomain;
 
 	public PartitionedDomain(){
-		this.environmentDomain = new HashSet<>();
-		this.systemDomain = new HashSet<>();
+		this.environmentDomain = new PropositionSet();
+		this.systemDomain = new PropositionSet();
 	}
 
-	public PartitionedDomain(HashSet<LTLfLocalVar> environmentDomain, HashSet<LTLfLocalVar> systemDomain){
+	public PartitionedDomain(PropositionSet environmentDomain, PropositionSet systemDomain){
 		this.environmentDomain = environmentDomain;
 		this.systemDomain = systemDomain;
 	}
@@ -46,26 +46,26 @@ public class PartitionedDomain {
 						"; System: " + this.systemDomain.toString();
 	}
 
-	public HashSet<LTLfLocalVar> getCompleteDomain(){
-		HashSet<LTLfLocalVar> res = new HashSet<>();
+	public PropositionSet getCompleteDomain(){
+		PropositionSet res = new PropositionSet();
 		res.addAll(this.environmentDomain);
 		res.addAll(this.systemDomain);
 		return res;
 	}
 
-	public HashSet<LTLfLocalVar> getEnvironmentDomain(){
+	public PropositionSet getEnvironmentDomain(){
 		return environmentDomain;
 	}
 
-	public HashSet<LTLfLocalVar> getSystemDomain(){
+	public PropositionSet getSystemDomain(){
 		return systemDomain;
 	}
 
-	public void setEnvironmentDomain(HashSet<LTLfLocalVar> environmentDomain){
+	public void setEnvironmentDomain(PropositionSet environmentDomain){
 		this.environmentDomain = environmentDomain;
 	}
 
-	public void setSystemDomain(HashSet<LTLfLocalVar> systemDomain){
+	public void setSystemDomain(PropositionSet systemDomain){
 		this.systemDomain = systemDomain;
 	}
 }

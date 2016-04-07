@@ -18,7 +18,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,8 +37,8 @@ public class AutomatonUtils {
 	public static Automaton transalteToGameAutomaton(Automaton original, PartitionedDomain domain){
 		Automaton res = new Automaton();
 
-		HashSet<LTLfLocalVar> environment = domain.getEnvironmentDomain();
-		HashSet<LTLfLocalVar> system = domain.getSystemDomain();
+		PropositionSet environment = domain.getEnvironmentDomain();
+		PropositionSet system = domain.getSystemDomain();
 
 		//Get original states iterator
 		Iterator<State> originalStates = original.states().iterator();
@@ -120,8 +119,8 @@ public class AutomatonUtils {
 	}
 
 	private static PartitionedWorldLabel partitionPossibleWorld(PossibleWorldWrap pw, PartitionedDomain domain){
-		HashSet<LTLfLocalVar> environment = new HashSet<>();
-		HashSet<LTLfLocalVar> system = new HashSet<>();
+		PropositionSet environment = new PropositionSet();
+		PropositionSet system = new PropositionSet();
 
 		for (Proposition p : pw){
 			LTLfLocalVar lv = new LTLfLocalVar(p);

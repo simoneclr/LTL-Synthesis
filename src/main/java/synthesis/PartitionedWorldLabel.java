@@ -1,9 +1,5 @@
 package synthesis;
 
-import formula.ltlf.LTLfLocalVar;
-
-import java.util.HashSet;
-
 /**
  * PartitionedWorldLabel
  * <br>
@@ -17,7 +13,7 @@ public class PartitionedWorldLabel extends PartitionedDomain implements SynthTra
 		super();
 	}
 
-	public PartitionedWorldLabel(HashSet<LTLfLocalVar> environmentDomain, HashSet<LTLfLocalVar> systemDomain){
+	public PartitionedWorldLabel(PropositionSet environmentDomain, PropositionSet systemDomain){
 		super(environmentDomain, systemDomain);
 	}
 

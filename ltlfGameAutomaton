@@ -1,0 +1,36 @@
+digraph Automaton {
+  rankdir = LR;
+  0 [shape=doublecircle,label="0"];
+  0 -> 0 [label="Environment: []; System: []"]
+  0 -> 4 [label="Environment: [a]; System: []"]
+  0 -> 0 [label="Environment: [a]; System: [b]"]
+  0 -> 0 [label="Environment: []; System: [b]"]
+  0 -> 1 [label="EmptyTrace"]
+  1 [shape=doublecircle,label="1"];
+  1 -> 1 [label="Environment: []; System: [b]"]
+  1 -> 1 [label="Environment: []; System: []"]
+  1 -> 1 [label="Environment: [a]; System: []"]
+  1 -> 1 [label="Environment: [a]; System: [b]"]
+  1 -> 1 [label="EmptyTrace"]
+  2 [shape=circle,label="2"];
+  2 -> 2 [label="EmptyTrace"]
+  2 -> 2 [label="Environment: [a]; System: [b]"]
+  2 -> 2 [label="Environment: [a]; System: []"]
+  2 -> 2 [label="Environment: []; System: [b]"]
+  2 -> 2 [label="Environment: []; System: []"]
+  3 [shape=circle,label="3"];
+  initial [shape=plaintext,label="3"];
+  initial -> 3
+  3 -> 1 [label="EmptyTrace"]
+  3 -> 0 [label="Environment: [a]; System: [b]"]
+  3 -> 0 [label="Environment: []; System: [b]"]
+  3 -> 0 [label="Environment: []; System: []"]
+  3 -> 4 [label="Environment: [a]; System: []"]
+  4 [shape=circle,label="4"];
+  4 -> 4 [label="Environment: []; System: []"]
+  4 -> 4 [label="Environment: [a]; System: []"]
+  4 -> 0 [label="Environment: [a]; System: [b]"]
+  4 -> 2 [label="EmptyTrace"]
+  4 -> 0 [label="Environment: []; System: [b]"]
+}
+

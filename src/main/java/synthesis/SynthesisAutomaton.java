@@ -24,15 +24,20 @@ public class SynthesisAutomaton {
 	private HashSet<PropositionSet> allSystemWorlds;
 	private HashSet<PropositionSet> allEnvironmentWorlds;
 
+	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
+
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
 		Automaton tmp = buildLTLfAutomaton(formula);
 		this.automaton = transalteToGameAutomaton(tmp, domain);
 
 		System.out.println(this.computeRealizability());
+		System.out.println(this.transducerOutputFunction);
 	}
 
 	private boolean computeRealizability(){
+		this.transducerOutputFunction = new HashMap<>();
+
 		HashSet<State> winningStates = new HashSet<>();
 		HashSet<State> newWinningStates = new HashSet<>();
 
@@ -42,33 +47,33 @@ public class SynthesisAutomaton {
 			//?????
 			//winningStates = new HashSet<>();
 			winningStates.addAll(newWinningStates);
-			//newWinningStates = new HashSet<>();
+			newWinningStates = new HashSet<>();
 			//newWinningStates.addAll(winningStates);
 
 			//TODO Maybe use non-winning states only?
 			for (State s : (Set<State>) this.automaton.states()){
-
 				TransitionMap transitionMap = this.computeTransitionMap(s, winningStates);
 
 				for (PropositionSet y : transitionMap.keySet()){
-					HashMap<PropositionSet, Set<State>> psStateMap = transitionMap.get(y);
+					HashSet<State> endStates = transitionMap.get(y);
 
-					for (PropositionSet x : psStateMap.keySet()){
-						Set<State> endStates = psStateMap.get(x);
-						boolean allWinning = true;
+					boolean allWinning = true;
 
-						for (State es : endStates){
-							if (!winningStates.contains(es)){
-								allWinning = false;
-							}
+					for (State es: endStates){
+						if (!winningStates.contains(es)){
+							allWinning = false;
 						}
+					}
 
-						if (allWinning){
-							newWinningStates.add(s);
-						}
+					if (allWinning){
+						newWinningStates.add(s);
+						this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
+						this.transducerOutputFunction.get(s).add(y);
 					}
 				}
 			}
+
+			newWinningStates.addAll(winningStates);
 		}
 
 		System.out.println("Winning states: " + winningStates);
@@ -87,11 +92,9 @@ public class SynthesisAutomaton {
 
 			if (label instanceof PartitionedWorldLabel){
 				PropositionSet system = ((PartitionedWorldLabel) label).getSystemDomain();
-				PropositionSet environment = ((PartitionedWorldLabel) label).getEnvironmentDomain();
+				transitionMap.putIfAbsent(system, new HashSet<>());
+				transitionMap.get(system).add(endState);
 
-				transitionMap.putIfAbsent(system, new HashMap<>());
-				transitionMap.get(system).putIfAbsent(environment, new HashSet<>());
-				transitionMap.get(system).get(environment).add(endState);
 			} else if (label instanceof SynthEmptyTrace){
 				emptyTraceWin = winningStates.contains(t.end());
 			} else {

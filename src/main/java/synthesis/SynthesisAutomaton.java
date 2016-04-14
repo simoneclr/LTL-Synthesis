@@ -33,7 +33,6 @@ public class SynthesisAutomaton {
 	}
 
 	private boolean computeRealizability(){
-
 		HashSet<State> winningStates = new HashSet<>();
 		HashSet<State> newWinningStates = new HashSet<>();
 
@@ -41,14 +40,15 @@ public class SynthesisAutomaton {
 
 		while (!winningStates.equals(newWinningStates)){
 			//?????
-			winningStates = new HashSet<>();
+			//winningStates = new HashSet<>();
 			winningStates.addAll(newWinningStates);
-			newWinningStates = new HashSet<>();
-			newWinningStates.addAll(winningStates);
+			//newWinningStates = new HashSet<>();
+			//newWinningStates.addAll(winningStates);
 
 			//TODO Maybe use non-winning states only?
 			for (State s : (Set<State>) this.automaton.states()){
-				TransitionMap transitionMap = this.computeTransitionMap(s);
+
+				TransitionMap transitionMap = this.computeTransitionMap(s, winningStates);
 
 				for (PropositionSet y : transitionMap.keySet()){
 					HashMap<PropositionSet, Set<State>> psStateMap = transitionMap.get(y);
@@ -71,13 +71,15 @@ public class SynthesisAutomaton {
 			}
 		}
 
+		System.out.println("Winning states: " + winningStates);
 		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 
-	private TransitionMap computeTransitionMap(State s){
+	private TransitionMap computeTransitionMap(State s, HashSet<State> winningStates){
 		TransitionMap transitionMap = new TransitionMap();
-
 		Set<Transition<SynthTransitionLabel>> transitions = this.automaton.delta(s);
+
+		boolean emptyTraceWin = true;
 
 		for (Transition<SynthTransitionLabel> t : transitions){
 			SynthTransitionLabel label = t.label();
@@ -90,7 +92,15 @@ public class SynthesisAutomaton {
 				transitionMap.putIfAbsent(system, new HashMap<>());
 				transitionMap.get(system).putIfAbsent(environment, new HashSet<>());
 				transitionMap.get(system).get(environment).add(endState);
+			} else if (label instanceof SynthEmptyTrace){
+				emptyTraceWin = winningStates.contains(t.end());
+			} else {
+				throw new RuntimeException("Unknown label type");
 			}
+		}
+
+		if (!emptyTraceWin) {
+			transitionMap = new TransitionMap();
 		}
 
 		return transitionMap;

@@ -11,5 +11,5 @@ import java.util.HashSet;
  *
  * @author Simone Calciolari.
  */
-public class PropositionSet extends HashSet<LTLfLocalVar> {
+public class PropositionSet extends HashSet<LTLfLocalVar> implements SynthTraceInput {
 }

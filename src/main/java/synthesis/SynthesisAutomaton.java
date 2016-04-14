@@ -34,17 +34,17 @@ public class SynthesisAutomaton {
 
 	private boolean computeRealizability(){
 
-		HashSet<State> win = new HashSet<>();
-		HashSet<State> newWin = new HashSet<>();
+		HashSet<State> winningStates = new HashSet<>();
+		HashSet<State> newWinningStates = new HashSet<>();
 
-		newWin.addAll(this.automaton.terminals());
+		newWinningStates.addAll(this.automaton.terminals());
 
-		while (!win.equals(newWin)){
+		while (!winningStates.equals(newWinningStates)){
 			//?????
-			win = new HashSet<>();
-			win.addAll(newWin);
-			newWin = new HashSet<>();
-			newWin.addAll(win);
+			winningStates = new HashSet<>();
+			winningStates.addAll(newWinningStates);
+			newWinningStates = new HashSet<>();
+			newWinningStates.addAll(winningStates);
 
 			//TODO Maybe use non-winning states only?
 			for (State s : (Set<State>) this.automaton.states()){
@@ -58,20 +58,20 @@ public class SynthesisAutomaton {
 						boolean allWinning = true;
 
 						for (State es : endStates){
-							if (!win.contains(es)){
+							if (!winningStates.contains(es)){
 								allWinning = false;
 							}
 						}
 
 						if (allWinning){
-							newWin.add(s);
+							newWinningStates.add(s);
 						}
 					}
 				}
 			}
 		}
 
-		return win.contains(this.automaton.initials().iterator().next());
+		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 
 	private TransitionMap computeTransitionMap(State s){

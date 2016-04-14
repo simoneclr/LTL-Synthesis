@@ -4,7 +4,6 @@ import rationals.State;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * TransitionMapBis
@@ -12,5 +11,5 @@ import java.util.Set;
  * Created by Simone Calciolari on 14/04/16.
  * @author Simone Calciolari.
  */
-public class TransitionMap extends HashMap<PropositionSet, HashSet<State>> {
+public class TransitionMap extends HashMap<State, HashMap<PropositionSet, HashSet<State>>> {
 }

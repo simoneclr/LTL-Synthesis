@@ -24,6 +24,8 @@ public class SynthesisAutomaton {
 	private HashSet<PropositionSet> allSystemWorlds;
 	private HashSet<PropositionSet> allEnvironmentWorlds;
 
+	private TransitionMap transitionMap;
+	private HashMap<State, State> emptyTraceTransitionMap;
 	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
@@ -31,8 +33,40 @@ public class SynthesisAutomaton {
 		Automaton tmp = buildLTLfAutomaton(formula);
 		this.automaton = transalteToGameAutomaton(tmp, domain);
 
+		this.computeTransitionMap();
+
+		System.out.println(this.transitionMap);
+		System.out.println(this.emptyTraceTransitionMap);
+
 		System.out.println(this.computeRealizability());
 		System.out.println(this.transducerOutputFunction);
+	}
+
+	private void computeTransitionMap(){
+		this.transitionMap = new TransitionMap();
+		this.emptyTraceTransitionMap = new HashMap<>();
+
+		for (State s : (Set<State>) this.automaton.states()){
+			this.transitionMap.putIfAbsent(s, new HashMap<>());
+
+			Set<Transition<SynthTransitionLabel>> transitions = this.automaton.delta(s);
+
+			for (Transition<SynthTransitionLabel> t : transitions){
+				SynthTransitionLabel label = t.label();
+				State endState = t.end();
+
+				if (label instanceof PartitionedWorldLabel){
+					PropositionSet system = ((PartitionedWorldLabel) label).getSystemDomain();
+					transitionMap.get(s).putIfAbsent(system, new HashSet<>());
+					transitionMap.get(s).get(system).add(endState);
+
+				} else if (label instanceof SynthEmptyTrace){
+					this.emptyTraceTransitionMap.put(s, endState);
+				} else {
+					throw new RuntimeException("Unknown label type");
+				}
+			}
+		}
 	}
 
 	private boolean computeRealizability(){
@@ -40,35 +74,21 @@ public class SynthesisAutomaton {
 
 		HashSet<State> winningStates = new HashSet<>();
 		HashSet<State> newWinningStates = new HashSet<>();
-
 		newWinningStates.addAll(this.automaton.terminals());
 
 		while (!winningStates.equals(newWinningStates)){
-			//?????
-			//winningStates = new HashSet<>();
 			winningStates.addAll(newWinningStates);
 			newWinningStates = new HashSet<>();
-			//newWinningStates.addAll(winningStates);
 
 			//TODO Maybe use non-winning states only?
 			for (State s : (Set<State>) this.automaton.states()){
-				TransitionMap transitionMap = this.computeTransitionMap(s, winningStates);
-
-				for (PropositionSet y : transitionMap.keySet()){
-					HashSet<State> endStates = transitionMap.get(y);
-
-					boolean allWinning = true;
-
-					for (State es: endStates){
-						if (!winningStates.contains(es)){
-							allWinning = false;
+				if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
+					for (PropositionSet y : transitionMap.get(s).keySet()){
+						if (winningStates.containsAll(this.transitionMap.get(s).get(y))){
+							newWinningStates.add(s);
+							this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
+							this.transducerOutputFunction.get(s).add(y);
 						}
-					}
-
-					if (allWinning){
-						newWinningStates.add(s);
-						this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
-						this.transducerOutputFunction.get(s).add(y);
 					}
 				}
 			}
@@ -78,35 +98,6 @@ public class SynthesisAutomaton {
 
 		System.out.println("Winning states: " + winningStates);
 		return winningStates.contains(this.automaton.initials().iterator().next());
-	}
-
-	private TransitionMap computeTransitionMap(State s, HashSet<State> winningStates){
-		TransitionMap transitionMap = new TransitionMap();
-		Set<Transition<SynthTransitionLabel>> transitions = this.automaton.delta(s);
-
-		boolean emptyTraceWin = true;
-
-		for (Transition<SynthTransitionLabel> t : transitions){
-			SynthTransitionLabel label = t.label();
-			State endState = t.end();
-
-			if (label instanceof PartitionedWorldLabel){
-				PropositionSet system = ((PartitionedWorldLabel) label).getSystemDomain();
-				transitionMap.putIfAbsent(system, new HashSet<>());
-				transitionMap.get(system).add(endState);
-
-			} else if (label instanceof SynthEmptyTrace){
-				emptyTraceWin = winningStates.contains(t.end());
-			} else {
-				throw new RuntimeException("Unknown label type");
-			}
-		}
-
-		if (!emptyTraceWin) {
-			transitionMap = new TransitionMap();
-		}
-
-		return transitionMap;
 	}
 
 	//<editor-fold desc="Old implementation (Wrong btw)" dafaultState="collapsed">

@@ -3,13 +3,13 @@ package synthesis;
 import rationals.State;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
 
 /**
- * TransitionMap
+ * TransitionMapBis
  * <br>
- * Created by Simone Calciolari on 07/04/16.
+ * Created by Simone Calciolari on 14/04/16.
  * @author Simone Calciolari.
  */
-public class TransitionMap extends HashMap<PropositionSet, HashMap<State, HashSet<PropositionSet>>> {
+public class TransitionMap extends HashMap<PropositionSet, HashMap<PropositionSet, Set<State>>> {
 }

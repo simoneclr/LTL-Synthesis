@@ -15,12 +15,14 @@ public class PartitionedDomain {
 	private PropositionSet environmentDomain;
 	private PropositionSet systemDomain;
 
-	public PartitionedDomain(){
-		this.environmentDomain = new PropositionSet();
-		this.systemDomain = new PropositionSet();
-	}
-
 	public PartitionedDomain(PropositionSet environmentDomain, PropositionSet systemDomain){
+
+		for (LTLfLocalVar x : environmentDomain){
+			if (systemDomain.contains(x)){
+				throw new RuntimeException("Proposition " + x + " cannot appear in both system and environment domain");
+			}
+		}
+
 		this.environmentDomain = environmentDomain;
 		this.systemDomain = systemDomain;
 	}
@@ -59,13 +61,5 @@ public class PartitionedDomain {
 
 	public PropositionSet getSystemDomain(){
 		return systemDomain;
-	}
-
-	public void setEnvironmentDomain(PropositionSet environmentDomain){
-		this.environmentDomain = environmentDomain;
-	}
-
-	public void setSystemDomain(PropositionSet systemDomain){
-		this.systemDomain = systemDomain;
 	}
 }

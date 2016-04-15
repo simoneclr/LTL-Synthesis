@@ -1,6 +1,7 @@
 package synthesis;
 
 import formula.ltlf.LTLfFormula;
+import formula.ltlf.LTLfLocalVar;
 import rationals.Automaton;
 import rationals.State;
 import rationals.Transition;
@@ -45,20 +46,31 @@ public class SynthesisAutomaton {
 	public PropositionSet step(SynthTraceInput environmentInput){
 		PropositionSet systemMove = new PropositionSet();
 
-		if (environmentInput instanceof PropositionSet){
-			PropositionSet environmentMove = (PropositionSet) environmentInput;
-			systemMove = this.transducerOutputFunction.get(this.currentState).iterator().next();
+		if (this.isRealizable()){
+			if (environmentInput instanceof PropositionSet){
+				PropositionSet environmentMove = (PropositionSet) environmentInput;
 
-			PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
-			Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
-			currentStateSet.add(this.currentState);
-			Set<State> arrivalStates = this.automaton.step(currentStateSet, label);
+				for (LTLfLocalVar v : environmentMove){
+					if (this.domain.getSystemDomain().contains(v)){
+						throw new RuntimeException("Proposition " + v + " is part of the system domain!");
+					}
+				}
 
-			if (arrivalStates.size() != 1){
-				throw new RuntimeException("Error! Automaton is not deterministic");
-			} else {
-				this.currentState = arrivalStates.iterator().next();
+				systemMove = this.transducerOutputFunction.get(this.currentState).iterator().next();
+
+				PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
+				Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
+				currentStateSet.add(this.currentState);
+				Set<State> arrivalStates = this.automaton.step(currentStateSet, label);
+
+				if (arrivalStates.size() != 1){
+					throw new RuntimeException("Error! Automaton is not deterministic");
+				} else {
+					this.currentState = arrivalStates.iterator().next();
+				}
 			}
+		} else {
+			throw new RuntimeException("The current problem is not realizable!");
 		}
 
 		return systemMove;

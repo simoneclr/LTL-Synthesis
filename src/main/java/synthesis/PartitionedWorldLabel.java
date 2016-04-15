@@ -9,10 +9,6 @@ package synthesis;
  */
 public class PartitionedWorldLabel extends PartitionedDomain implements SynthTransitionLabel {
 
-	public PartitionedWorldLabel(){
-		super();
-	}
-
 	public PartitionedWorldLabel(PropositionSet environmentDomain, PropositionSet systemDomain){
 		super(environmentDomain, systemDomain);
 	}

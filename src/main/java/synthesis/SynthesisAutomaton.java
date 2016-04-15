@@ -28,6 +28,7 @@ public class SynthesisAutomaton {
 	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 
 	private State currentState;
+	private boolean realizable;
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
@@ -36,11 +37,7 @@ public class SynthesisAutomaton {
 
 		this.computeTransitionMaps();
 
-		System.out.println(this.transitionMap);
-		System.out.println(this.emptyTraceTransitionMap);
-
-		System.out.println(this.computeRealizability());
-		System.out.println(this.transducerOutputFunction);
+		this.realizable = this.computeRealizability();
 
 		this.currentState = (State) this.automaton.initials().iterator().next();
 	}
@@ -65,6 +62,36 @@ public class SynthesisAutomaton {
 		}
 
 		return systemMove;
+	}
+
+	public ArrayList<PropositionSet> batchSteps(ArrayList<SynthTraceInput> environmentMoves){
+		ArrayList<PropositionSet> systemMoves = new ArrayList<>();
+
+		for (SynthTraceInput em : environmentMoves){
+			systemMoves.add(this.step(em));
+		}
+
+		return systemMoves;
+	}
+
+	public void resetExecution(){
+		this.currentState = (State) this.automaton.initials().iterator().next();
+	}
+
+	private HashSet<State> computeWinningFinalStates(Set<State> states){
+		HashSet<State> res = new HashSet<>();
+
+		for (State s : states){
+			if (states.contains(this.emptyTraceTransitionMap.get(s))){
+				for (PropositionSet y : transitionMap.get(s).keySet()){
+					if (states.containsAll(transitionMap.get(s).get(y))){
+						res.add(s);
+					}
+				}
+			}
+		}
+
+		return res;
 	}
 
 	private void computeTransitionMaps(){
@@ -100,8 +127,9 @@ public class SynthesisAutomaton {
 		this.transducerOutputFunction = new HashMap<>();
 
 		HashSet<State> winningStates = new HashSet<>();
-		HashSet<State> newWinningStates = new HashSet<>();
-		newWinningStates.addAll(this.automaton.terminals());
+		HashSet<State> terminals = new HashSet<>();
+		terminals.addAll(this.automaton.terminals());
+		HashSet<State> newWinningStates = this.computeWinningFinalStates(terminals);
 
 		while (!winningStates.equals(newWinningStates)){
 			winningStates.addAll(newWinningStates);
@@ -123,7 +151,21 @@ public class SynthesisAutomaton {
 			newWinningStates.addAll(winningStates);
 		}
 
-		System.out.println("Winning states: " + winningStates);
 		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
+
+
+	//<editor-fold desc="Getter Methods" defaultState="collapsed">
+	public boolean isRealizable() {
+		return realizable;
+	}
+
+	public HashMap<State, HashSet<PropositionSet>> getTransducerOutputFunction() {
+		return transducerOutputFunction;
+	}
+
+	public PartitionedDomain getDomain() {
+		return domain;
+	}
+	//</editor-fold>
 }

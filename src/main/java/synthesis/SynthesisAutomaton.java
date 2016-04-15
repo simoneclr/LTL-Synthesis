@@ -3,13 +3,11 @@ package synthesis;
 import formula.ltlf.LTLfFormula;
 import formula.ltlf.LTLfLocalVar;
 import rationals.Automaton;
+import rationals.NoSuchStateException;
 import rationals.State;
 import rationals.Transition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static util.AutomatonUtils.*;
 
@@ -28,6 +26,7 @@ public class SynthesisAutomaton {
 	private HashMap<State, State> emptyTraceTransitionMap;
 	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 
+	private HashSet<State> winningStates;
 	private State currentState;
 	private boolean realizable;
 
@@ -88,6 +87,60 @@ public class SynthesisAutomaton {
 
 	public void resetExecution(){
 		this.currentState = (State) this.automaton.initials().iterator().next();
+	}
+
+	public StrategyGenerator getStrategyGenerator(){
+		Automaton strategyAutomaton = new Automaton();
+
+		//Map to translate states
+		HashMap<State, State> oldToNewStates = new HashMap<>();
+
+		//Add states to the new automaton and fill the map
+		for (State oldState: this.winningStates){
+			State newState = strategyAutomaton.addState(oldState.isInitial(), oldState.isTerminal());
+			oldToNewStates.put(oldState, newState);
+		}
+
+		for (State oldStart : this.winningStates){
+			Set<Transition<SynthTransitionLabel>> oldTransitions = this.automaton.delta(oldStart);
+
+			for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
+				//If it's a winning transition, add it to the strategy generator
+				SynthTransitionLabel oldLabel = oldTransition.label();
+				State oldEnd = oldTransition.end();
+
+				if (this.winningStates.contains(oldEnd)){
+					SynthTransitionLabel newLabel = null;
+
+					if (oldLabel instanceof SynthEmptyTrace){
+						if (this.winningStates.contains(this.emptyTraceTransitionMap.get(oldStart))){
+							newLabel = new SynthEmptyTrace();
+						}
+					} else {
+						PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
+						if (this.transducerOutputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
+							newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
+						}
+					}
+
+					//i.e. if it's a winning transition
+					if (newLabel != null){
+						State newStart = oldToNewStates.get(oldStart);
+						State newEnd = oldToNewStates.get(oldEnd);
+
+						Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
+
+						try {
+							strategyAutomaton.addTransition(newTransition);
+						} catch (NoSuchStateException e){
+							throw new RuntimeException(e);
+						}
+					}
+				}
+			}
+		}
+
+		return new StrategyGenerator(strategyAutomaton);
 	}
 
 	private HashSet<State> computeWinningFinalStates(Set<State> states){
@@ -163,6 +216,7 @@ public class SynthesisAutomaton {
 			newWinningStates.addAll(winningStates);
 		}
 
+		this.winningStates = winningStates;
 		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 

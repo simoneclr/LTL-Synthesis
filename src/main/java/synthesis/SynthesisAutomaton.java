@@ -40,62 +40,66 @@ public class SynthesisAutomaton {
 	}
 
 	public StrategyGenerator getStrategyGenerator(){
-		Automaton strategyAutomaton = new Automaton();
-		HashMap<State, HashSet<PropositionSet>> strategyMap = new HashMap<>();
+		if (this.isRealizable()){
+			Automaton strategyAutomaton = new Automaton();
+			HashMap<State, HashSet<PropositionSet>> strategyMap = new HashMap<>();
 
-		//Map to translate states
-		HashMap<State, State> oldToNewStates = new HashMap<>();
+			//Map to translate states
+			HashMap<State, State> oldToNewStates = new HashMap<>();
 
-		//Add states to the new automaton and fill the map
-		for (State oldState: this.winningStates){
-			State newState = strategyAutomaton.addState(oldState.isInitial(), oldState.isTerminal());
-			oldToNewStates.put(oldState, newState);
-		}
+			//Add states to the new automaton and fill the map
+			for (State oldState: this.winningStates){
+				State newState = strategyAutomaton.addState(oldState.isInitial(), oldState.isTerminal());
+				oldToNewStates.put(oldState, newState);
+			}
 
-		for (State oldStart : this.winningStates){
-			Set<Transition<SynthTransitionLabel>> oldTransitions = this.automaton.delta(oldStart);
-			State newStart = oldToNewStates.get(oldStart);
+			for (State oldStart : this.winningStates){
+				Set<Transition<SynthTransitionLabel>> oldTransitions = this.automaton.delta(oldStart);
+				State newStart = oldToNewStates.get(oldStart);
 
-			//Update the strategy map
-			strategyMap.putIfAbsent(newStart, new HashSet<>());
-			strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
+				//Update the strategy map
+				strategyMap.putIfAbsent(newStart, new HashSet<>());
+				strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
 
-			for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
-				//If it's a winning transition, add it to the strategy generator
-				SynthTransitionLabel oldLabel = oldTransition.label();
-				State oldEnd = oldTransition.end();
+				for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
+					//If it's a winning transition, add it to the strategy generator
+					SynthTransitionLabel oldLabel = oldTransition.label();
+					State oldEnd = oldTransition.end();
 
-				if (this.winningStates.contains(oldEnd)){
-					SynthTransitionLabel newLabel = null;
+					if (this.winningStates.contains(oldEnd)){
+						SynthTransitionLabel newLabel = null;
 
-					if (oldLabel instanceof SynthEmptyTrace){
-						if (this.winningStates.contains(this.emptyTraceTransitionMap.get(oldStart))){
-							newLabel = new SynthEmptyTrace();
+						if (oldLabel instanceof SynthEmptyTrace){
+							if (this.winningStates.contains(this.emptyTraceTransitionMap.get(oldStart))){
+								newLabel = new SynthEmptyTrace();
+							}
+						} else {
+							PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
+							if (this.transducerOutputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
+								newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
+							}
 						}
-					} else {
-						PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
-						if (this.transducerOutputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
-							newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
-						}
-					}
 
-					//i.e. if it's a winning transition
-					if (newLabel != null){
-						State newEnd = oldToNewStates.get(oldEnd);
+						//i.e. if it's a winning transition
+						if (newLabel != null){
+							State newEnd = oldToNewStates.get(oldEnd);
 
-						Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
+							Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
 
-						try {
-							strategyAutomaton.addTransition(newTransition);
-						} catch (NoSuchStateException e){
-							throw new RuntimeException(e);
+							try {
+								strategyAutomaton.addTransition(newTransition);
+							} catch (NoSuchStateException e){
+								throw new RuntimeException(e);
+							}
 						}
 					}
 				}
 			}
-		}
 
-		return new StrategyGenerator(strategyAutomaton, this.domain, strategyMap);
+			return new StrategyGenerator(strategyAutomaton, this.domain, strategyMap);
+		} else {
+			throw new RuntimeException("Problem is not realizable!");
+		}
 	}
 
 	private HashSet<State> computeWinningFinalStates(Set<State> states){

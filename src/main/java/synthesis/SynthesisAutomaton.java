@@ -27,7 +27,6 @@ public class SynthesisAutomaton {
 	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 
 	private HashSet<State> winningStates;
-	private State currentState;
 	private boolean realizable;
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
@@ -38,57 +37,6 @@ public class SynthesisAutomaton {
 		this.computeTransitionMaps();
 
 		this.realizable = this.computeRealizability();
-
-		this.currentState = (State) this.automaton.initials().iterator().next();
-	}
-
-	public PropositionSet step(SynthTraceInput environmentInput){
-		PropositionSet systemMove = new PropositionSet();
-
-		if (this.isRealizable()){
-			if (environmentInput instanceof PropositionSet){
-				PropositionSet environmentMove = (PropositionSet) environmentInput;
-
-				for (LTLfLocalVar v : environmentMove){
-					if (this.domain.getSystemDomain().contains(v)){
-						throw new RuntimeException("Proposition " + v + " is part of the system domain!");
-					} else if (!this.domain.getEnvironmentDomain().contains(v)){
-						throw new RuntimeException("Proposition " + v + " is not part of the environment domain");
-					}
-				}
-
-				systemMove = this.transducerOutputFunction.get(this.currentState).iterator().next();
-
-				PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
-				Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
-				currentStateSet.add(this.currentState);
-				Set<State> arrivalStates = this.automaton.step(currentStateSet, label);
-
-				if (arrivalStates.size() != 1){
-					throw new RuntimeException("Error! Automaton is not deterministic");
-				} else {
-					this.currentState = arrivalStates.iterator().next();
-				}
-			}
-		} else {
-			throw new RuntimeException("The current problem is not realizable!");
-		}
-
-		return systemMove;
-	}
-
-	public ArrayList<PropositionSet> batchSteps(ArrayList<SynthTraceInput> environmentMoves){
-		ArrayList<PropositionSet> systemMoves = new ArrayList<>();
-
-		for (SynthTraceInput em : environmentMoves){
-			systemMoves.add(this.step(em));
-		}
-
-		return systemMoves;
-	}
-
-	public void resetExecution(){
-		this.currentState = (State) this.automaton.initials().iterator().next();
 	}
 
 	public StrategyGenerator getStrategyGenerator(){

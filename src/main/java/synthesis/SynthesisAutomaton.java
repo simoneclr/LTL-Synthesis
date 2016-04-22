@@ -147,7 +147,7 @@ public class SynthesisAutomaton {
 			}
 		}
 
-		return new StrategyGenerator(strategyAutomaton, strategyMap);
+		return new StrategyGenerator(strategyAutomaton, this.domain, strategyMap);
 	}
 
 	private HashSet<State> computeWinningFinalStates(Set<State> states){

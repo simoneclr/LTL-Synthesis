@@ -1,6 +1,10 @@
 package synthesis;
 
 import rationals.Automaton;
+import rationals.State;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * SynthesisStrategyGenerator
@@ -11,9 +15,13 @@ import rationals.Automaton;
 public class StrategyGenerator {
 
 	private Automaton automaton;
+	private HashMap<State, HashSet<PropositionSet>> outputFunction;
 
-	public StrategyGenerator(Automaton automaton){
+	public StrategyGenerator(Automaton automaton, HashMap<State, HashSet<PropositionSet>> outputFunction){
 		this.automaton = automaton;
+		this.outputFunction = outputFunction;
+
+		System.out.println(this.outputFunction);
 	}
 
 	public Automaton getAutomaton() {

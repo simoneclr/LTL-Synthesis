@@ -52,6 +52,8 @@ public class SynthesisAutomaton {
 				for (LTLfLocalVar v : environmentMove){
 					if (this.domain.getSystemDomain().contains(v)){
 						throw new RuntimeException("Proposition " + v + " is part of the system domain!");
+					} else if (!this.domain.getEnvironmentDomain().contains(v)){
+						throw new RuntimeException("Proposition " + v + " is not part of the environment domain");
 					}
 				}
 
@@ -91,6 +93,7 @@ public class SynthesisAutomaton {
 
 	public StrategyGenerator getStrategyGenerator(){
 		Automaton strategyAutomaton = new Automaton();
+		HashMap<State, HashSet<PropositionSet>> strategyMap = new HashMap<>();
 
 		//Map to translate states
 		HashMap<State, State> oldToNewStates = new HashMap<>();
@@ -103,6 +106,11 @@ public class SynthesisAutomaton {
 
 		for (State oldStart : this.winningStates){
 			Set<Transition<SynthTransitionLabel>> oldTransitions = this.automaton.delta(oldStart);
+			State newStart = oldToNewStates.get(oldStart);
+
+			//Update the strategy map
+			strategyMap.putIfAbsent(newStart, new HashSet<>());
+			strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
 
 			for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
 				//If it's a winning transition, add it to the strategy generator
@@ -125,7 +133,6 @@ public class SynthesisAutomaton {
 
 					//i.e. if it's a winning transition
 					if (newLabel != null){
-						State newStart = oldToNewStates.get(oldStart);
 						State newEnd = oldToNewStates.get(oldEnd);
 
 						Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
@@ -140,7 +147,7 @@ public class SynthesisAutomaton {
 			}
 		}
 
-		return new StrategyGenerator(strategyAutomaton);
+		return new StrategyGenerator(strategyAutomaton, strategyMap);
 	}
 
 	private HashSet<State> computeWinningFinalStates(Set<State> states){

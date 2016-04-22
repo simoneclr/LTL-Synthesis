@@ -110,6 +110,8 @@ public class SynthesisAutomaton {
 				for (PropositionSet y : transitionMap.get(s).keySet()){
 					if (states.containsAll(transitionMap.get(s).get(y))){
 						res.add(s);
+						this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
+						this.transducerOutputFunction.get(s).add(y);
 					}
 				}
 			}
@@ -160,7 +162,11 @@ public class SynthesisAutomaton {
 			newWinningStates = new HashSet<>();
 
 			//TODO Maybe use non-winning states only?
-			for (State s : (Set<State>) this.automaton.states()){
+			HashSet<State> nonWinningStates = new HashSet<>();
+			nonWinningStates.addAll(this.automaton.states());
+			nonWinningStates.removeAll(winningStates);
+
+			for (State s : nonWinningStates){
 				if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
 					for (PropositionSet y : transitionMap.get(s).keySet()){
 						if (winningStates.containsAll(this.transitionMap.get(s).get(y))){

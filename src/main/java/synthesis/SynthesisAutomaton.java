@@ -1,7 +1,6 @@
 package synthesis;
 
 import formula.ltlf.LTLfFormula;
-import formula.ltlf.LTLfLocalVar;
 import rationals.Automaton;
 import rationals.NoSuchStateException;
 import rationals.State;
@@ -28,6 +27,10 @@ public class SynthesisAutomaton {
 
 	private HashSet<State> winningStates;
 	private boolean realizable;
+
+	private HashMap<State, HashSet<PropositionSet>> exOutputFunction;
+	private HashMap<State, HashSet<PropositionSet>> exSafeOutputFunction;
+	private HashSet<State> exWinningStates;
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
@@ -102,24 +105,6 @@ public class SynthesisAutomaton {
 		}
 	}
 
-	private HashSet<State> computeWinningFinalStates(Set<State> states){
-		HashSet<State> res = new HashSet<>();
-
-		for (State s : states){
-			if (states.contains(this.emptyTraceTransitionMap.get(s))){
-				for (PropositionSet y : transitionMap.get(s).keySet()){
-					if (states.containsAll(transitionMap.get(s).get(y))){
-						res.add(s);
-						this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
-						this.transducerOutputFunction.get(s).add(y);
-					}
-				}
-			}
-		}
-
-		return res;
-	}
-
 	private void computeTransitionMaps(){
 		this.transitionMap = new TransitionMap();
 		this.emptyTraceTransitionMap = new HashMap<>();
@@ -149,6 +134,24 @@ public class SynthesisAutomaton {
 		}
 	}
 
+	private HashSet<State> computeWinningFinalStates(Set<State> states){
+		HashSet<State> res = new HashSet<>();
+
+		for (State s : states){
+			if (states.contains(this.emptyTraceTransitionMap.get(s))){
+				for (PropositionSet y : transitionMap.get(s).keySet()){
+					if (states.containsAll(transitionMap.get(s).get(y))){
+						res.add(s);
+						this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
+						this.transducerOutputFunction.get(s).add(y);
+					}
+				}
+			}
+		}
+
+		return res;
+	}
+
 	private boolean computeRealizability(){
 		this.transducerOutputFunction = new HashMap<>();
 
@@ -161,7 +164,6 @@ public class SynthesisAutomaton {
 			winningStates.addAll(newWinningStates);
 			newWinningStates = new HashSet<>();
 
-			//TODO Maybe use non-winning states only?
 			HashSet<State> nonWinningStates = new HashSet<>();
 			nonWinningStates.addAll(this.automaton.states());
 			nonWinningStates.removeAll(winningStates);
@@ -182,6 +184,63 @@ public class SynthesisAutomaton {
 		}
 
 		this.winningStates = winningStates;
+		return winningStates.contains(this.automaton.initials().iterator().next());
+	}
+
+	public boolean computeExistsRealizability(){
+		if (this.computeRealizability()){
+			//return true;
+		}
+
+		this.exOutputFunction = new HashMap<>();
+		this.exSafeOutputFunction = new HashMap<>();
+
+		HashSet<State> winningStates = new HashSet<>();
+		HashSet<State> newWinningStates = new HashSet<>();
+		newWinningStates.addAll(this.automaton.terminals());
+
+		while (!winningStates.equals(newWinningStates)){
+			winningStates.addAll(newWinningStates);
+			newWinningStates = new HashSet<>();
+
+			HashSet<State> nonWinningStates = new HashSet<>();
+			nonWinningStates.addAll(this.automaton.states());
+			nonWinningStates.removeAll(winningStates);
+
+			for (State s : nonWinningStates){
+				if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
+					for (PropositionSet y : transitionMap.get(s).keySet()){
+						if (winningStates.containsAll(this.transitionMap.get(s).get(y))){
+							newWinningStates.add(s);
+							this.exSafeOutputFunction.putIfAbsent(s, new HashSet<>());
+							this.exSafeOutputFunction.get(s).add(y);
+						}
+					}
+				}
+
+				if (exSafeOutputFunction.get(s) == null || exSafeOutputFunction.get(s).isEmpty()){
+					//I.E. no safe moves from state s
+					if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
+						newWinningStates.add(s);
+					}
+
+					for (PropositionSet y : transitionMap.get(s).keySet()){
+						for (State sPrime : transitionMap.get(s).get(y)){
+							if (winningStates.contains(sPrime)){
+								newWinningStates.add(s);
+								this.exOutputFunction.putIfAbsent(s, new HashSet<>());
+								this.exOutputFunction.get(s).add(y);
+							}
+						}
+					}
+				}
+
+			}
+
+			newWinningStates.addAll(winningStates);
+		}
+
+		this.exWinningStates = winningStates;
 		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 

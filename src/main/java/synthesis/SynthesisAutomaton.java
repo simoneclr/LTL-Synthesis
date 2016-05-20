@@ -23,14 +23,15 @@ public class SynthesisAutomaton {
 
 	private TransitionMap transitionMap;
 	private HashMap<State, State> emptyTraceTransitionMap;
-	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 
+	private HashMap<State, HashSet<PropositionSet>> transducerOutputFunction;
 	private HashSet<State> winningStates;
 	private boolean realizable;
 
 	private HashMap<State, HashSet<PropositionSet>> exOutputFunction;
 	private HashMap<State, HashSet<PropositionSet>> exSafeOutputFunction;
 	private HashSet<State> exWinningStates;
+	private boolean exRealizable;
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
@@ -40,6 +41,10 @@ public class SynthesisAutomaton {
 		this.computeTransitionMaps();
 
 		this.realizable = this.computeRealizability();
+
+		if (!this.realizable){
+			this.exRealizable = this.computeExistsRealizability();
+		}
 	}
 
 	public StrategyGenerator getStrategyGenerator(){
@@ -221,7 +226,8 @@ public class SynthesisAutomaton {
 				if (exSafeOutputFunction.get(s) == null || exSafeOutputFunction.get(s).isEmpty()){
 					//I.E. no safe moves from state s
 					if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
-						newWinningStates.add(s);
+						//TODO Are we really sure about this?
+						//newWinningStates.add(s);
 					}
 
 					for (PropositionSet y : transitionMap.get(s).keySet()){

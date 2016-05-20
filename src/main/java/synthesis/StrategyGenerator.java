@@ -17,12 +17,13 @@ import java.util.Set;
  */
 public class StrategyGenerator {
 
-	private Automaton automaton;
-	private PartitionedDomain domain;
-	private HashMap<State, HashSet<PropositionSet>> outputFunction;
-	private State currentState;
+	protected Automaton automaton;
+	protected PartitionedDomain domain;
+	protected HashMap<State, HashSet<PropositionSet>> outputFunction;
+	protected State currentState;
 
-	public StrategyGenerator(Automaton automaton, PartitionedDomain domain, HashMap<State, HashSet<PropositionSet>> outputFunction){
+	public StrategyGenerator(Automaton automaton, PartitionedDomain domain,
+													 HashMap<State, HashSet<PropositionSet>> outputFunction){
 		this.automaton = automaton;
 		this.domain = domain;
 		this.outputFunction = outputFunction;

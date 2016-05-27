@@ -60,7 +60,9 @@ public class SynthesisAutomaton {
 				//Update the strategy map
 				strategyMap.putIfAbsent(newStart, new HashSet<>());
 
-				if (!this.automaton.terminals().contains(oldStart)){strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
+				if (!this.automaton.terminals().contains(oldStart)){
+					//No point in adding outgoing transitions of terminal states
+					strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
 
 					for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
 						//If it's a winning transition, add it to the strategy generator

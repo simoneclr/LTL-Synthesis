@@ -59,37 +59,39 @@ public class SynthesisAutomaton {
 
 				//Update the strategy map
 				strategyMap.putIfAbsent(newStart, new HashSet<>());
-				strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
 
-				for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
-					//If it's a winning transition, add it to the strategy generator
-					SynthTransitionLabel oldLabel = oldTransition.label();
-					State oldEnd = oldTransition.end();
+				if (!this.automaton.terminals().contains(oldStart)){strategyMap.get(newStart).addAll(this.transducerOutputFunction.get(oldStart));
 
-					if (this.winningStates.contains(oldEnd)){
-						SynthTransitionLabel newLabel = null;
+					for (Transition<SynthTransitionLabel> oldTransition: oldTransitions){
+						//If it's a winning transition, add it to the strategy generator
+						SynthTransitionLabel oldLabel = oldTransition.label();
+						State oldEnd = oldTransition.end();
 
-						if (oldLabel instanceof SynthEmptyTrace){
-							if (this.winningStates.contains(this.emptyTraceTransitionMap.get(oldStart))){
-								newLabel = new SynthEmptyTrace();
+						if (this.winningStates.contains(oldEnd)){
+							SynthTransitionLabel newLabel = null;
+
+							if (oldLabel instanceof SynthEmptyTrace){
+								if (this.winningStates.contains(this.emptyTraceTransitionMap.get(oldStart))){
+									newLabel = new SynthEmptyTrace();
+								}
+							} else {
+								PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
+								if (this.transducerOutputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
+									newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
+								}
 							}
-						} else {
-							PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
-							if (this.transducerOutputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
-								newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
-							}
-						}
 
-						//i.e. if it's a winning transition
-						if (newLabel != null){
-							State newEnd = oldToNewStates.get(oldEnd);
+							//i.e. if it's a winning transition
+							if (newLabel != null){
+								State newEnd = oldToNewStates.get(oldEnd);
 
-							Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
+								Transition<SynthTransitionLabel> newTransition = new Transition<>(newStart, newLabel, newEnd);
 
-							try {
-								strategyAutomaton.addTransition(newTransition);
-							} catch (NoSuchStateException e){
-								throw new RuntimeException(e);
+								try {
+									strategyAutomaton.addTransition(newTransition);
+								} catch (NoSuchStateException e){
+									throw new RuntimeException(e);
+								}
 							}
 						}
 					}
@@ -98,8 +100,46 @@ public class SynthesisAutomaton {
 
 			return new StrategyGenerator(strategyAutomaton, this.domain, strategyMap);
 		} else {
-			throw new RuntimeException("Problem is not realizable!");
+			return null;
 		}
+	}
+
+	private boolean computeRealizability(){
+		this.transducerOutputFunction = new HashMap<>();
+
+		HashSet<State> winningStates = new HashSet<>();
+		HashSet<State> terminals = new HashSet<>();
+		terminals.addAll(this.automaton.terminals());
+		HashSet<State> newWinningStates;
+		//newWinningStates = this.computeWinningFinalStates(terminals);
+		newWinningStates = terminals;
+
+		while (!winningStates.equals(newWinningStates)){
+			winningStates.addAll(newWinningStates);
+			newWinningStates = new HashSet<>();
+
+			//TODO Maybe use non-winning states only?
+			HashSet<State> nonWinningStates = new HashSet<>();
+			nonWinningStates.addAll(this.automaton.states());
+			nonWinningStates.removeAll(winningStates);
+
+			for (State s : nonWinningStates){
+				if (terminals.contains(this.emptyTraceTransitionMap.get(s))){
+					for (PropositionSet y : transitionMap.get(s).keySet()){
+						if (winningStates.containsAll(this.transitionMap.get(s).get(y))){
+							newWinningStates.add(s);
+							this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
+							this.transducerOutputFunction.get(s).add(y);
+						}
+					}
+				}
+			}
+
+			newWinningStates.addAll(winningStates);
+		}
+
+		this.winningStates = winningStates;
+		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 
 	private HashSet<State> computeWinningFinalStates(Set<State> states){
@@ -147,42 +187,6 @@ public class SynthesisAutomaton {
 				}
 			}
 		}
-	}
-
-	private boolean computeRealizability(){
-		this.transducerOutputFunction = new HashMap<>();
-
-		HashSet<State> winningStates = new HashSet<>();
-		HashSet<State> terminals = new HashSet<>();
-		terminals.addAll(this.automaton.terminals());
-		HashSet<State> newWinningStates = this.computeWinningFinalStates(terminals);
-
-		while (!winningStates.equals(newWinningStates)){
-			winningStates.addAll(newWinningStates);
-			newWinningStates = new HashSet<>();
-
-			//TODO Maybe use non-winning states only?
-			HashSet<State> nonWinningStates = new HashSet<>();
-			nonWinningStates.addAll(this.automaton.states());
-			nonWinningStates.removeAll(winningStates);
-
-			for (State s : nonWinningStates){
-				if (winningStates.contains(this.emptyTraceTransitionMap.get(s))){
-					for (PropositionSet y : transitionMap.get(s).keySet()){
-						if (winningStates.containsAll(this.transitionMap.get(s).get(y))){
-							newWinningStates.add(s);
-							this.transducerOutputFunction.putIfAbsent(s, new HashSet<>());
-							this.transducerOutputFunction.get(s).add(y);
-						}
-					}
-				}
-			}
-
-			newWinningStates.addAll(winningStates);
-		}
-
-		this.winningStates = winningStates;
-		return winningStates.contains(this.automaton.initials().iterator().next());
 	}
 
 

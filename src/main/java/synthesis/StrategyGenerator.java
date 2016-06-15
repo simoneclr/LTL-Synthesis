@@ -4,10 +4,7 @@ import formula.ltlf.LTLfLocalVar;
 import rationals.Automaton;
 import rationals.State;
 import synthesis.maps.OutputFunction;
-import synthesis.symbols.PartitionedDomain;
-import synthesis.symbols.PartitionedWorldLabel;
-import synthesis.symbols.PropositionSet;
-import synthesis.symbols.SynthTraceInput;
+import synthesis.symbols.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +21,9 @@ public class StrategyGenerator {
 
 	private Automaton automaton;
 	private PartitionedDomain domain;
-	private OutputFunction outputFunction;
+
 	private State currentState;
+	private OutputFunction outputFunction;
 
 	public StrategyGenerator(Automaton automaton, PartitionedDomain domain, OutputFunction outputFunction){
 		this.automaton = automaton;
@@ -34,39 +32,49 @@ public class StrategyGenerator {
 		this.currentState = (State) this.automaton.initials().iterator().next();
 	}
 
-	public PropositionSet step(SynthTraceInput environmentInput){
-		PropositionSet systemMove = new PropositionSet();
+	public StrategyOutput step(SynthTraceInput environmentInput){
+		StrategyOutput res;
 
-		if (environmentInput instanceof PropositionSet){
-			PropositionSet environmentMove = (PropositionSet) environmentInput;
+		if (this.currentState.isInitial()){
+			res = new StrategySuccessOutput();
+		} else {
+			PropositionSet systemMove = new PropositionSet();
 
-			for (LTLfLocalVar v : environmentMove){
-				if (this.domain.getSystemDomain().contains(v)){
-					throw new RuntimeException("Proposition " + v + " is part of the system domain!");
-				} else if (!this.domain.getEnvironmentDomain().contains(v)){
-					throw new RuntimeException("Proposition " + v + " is not part of the environment domain");
+			if (environmentInput instanceof PropositionSet){
+				PropositionSet environmentMove = (PropositionSet) environmentInput;
+
+				for (LTLfLocalVar v : environmentMove){
+					if (this.domain.getSystemDomain().contains(v)){
+						throw new RuntimeException("Proposition " + v + " is part of the system domain!");
+					} else if (!this.domain.getEnvironmentDomain().contains(v)){
+						throw new RuntimeException("Proposition " + v + " is not part of the environment domain");
+					}
 				}
-			}
 
-			systemMove = this.outputFunction.get(this.currentState).iterator().next();
+				systemMove = this.outputFunction.get(this.currentState).iterator().next();
 
-			PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
-			Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
-			currentStateSet.add(this.currentState);
-			Set<State> arrivalStates = this.automaton.step(currentStateSet, label);
+				PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
+				Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
+				currentStateSet.add(this.currentState);
+				Set<State> arrivalStates = this.automaton.step(currentStateSet, label);
 
-			if (arrivalStates.size() != 1){
-				throw new RuntimeException("Error! Automaton is not deterministic");
+				if (arrivalStates.size() != 1){
+					throw new RuntimeException("Error! Automaton is not deterministic");
+				} else {
+					this.currentState = arrivalStates.iterator().next();
+				}
 			} else {
-				this.currentState = arrivalStates.iterator().next();
+				throw new RuntimeException("Invalid environment input");
 			}
+
+			res = systemMove;
 		}
 
-		return systemMove;
+		return res;
 	}
 
-	public ArrayList<PropositionSet> batchSteps(ArrayList<SynthTraceInput> environmentMoves){
-		ArrayList<PropositionSet> systemMoves = new ArrayList<>();
+	public ArrayList<StrategyOutput> batchSteps(ArrayList<SynthTraceInput> environmentMoves){
+		ArrayList<StrategyOutput> systemMoves = new ArrayList<>();
 
 		for (SynthTraceInput em : environmentMoves){
 			systemMoves.add(this.step(em));
@@ -79,7 +87,7 @@ public class StrategyGenerator {
 		this.currentState = (State) this.automaton.initials().iterator().next();
 	}
 
-	public Automaton getAutomaton() {
+	public Automaton getAutomaton(){
 		return automaton;
 	}
 }

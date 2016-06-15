@@ -1,6 +1,9 @@
 package synthesis;
 
 import formula.ltlf.LTLfFormula;
+import formula.ltlf.LTLfLocalVar;
+import net.sf.tweety.logics.pl.syntax.Proposition;
+import net.sf.tweety.logics.pl.syntax.PropositionalSignature;
 import rationals.Automaton;
 import rationals.NoSuchStateException;
 import rationals.State;
@@ -33,6 +36,15 @@ public class SynthesisAutomaton {
 
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
+
+		PropositionalSignature ps = formula.getSignature();
+		for (Proposition p : ps){
+			LTLfLocalVar lv = new LTLfLocalVar(p);
+			if (!this.domain.getCompleteDomain().contains(lv)){
+				throw new RuntimeException("Unkown proposition " + lv);
+			}
+		}
+
 		Automaton tmp = buildLTLfAutomaton(formula);
 		this.automaton = transalteToGameAutomaton(tmp, domain);
 

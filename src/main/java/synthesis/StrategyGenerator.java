@@ -38,7 +38,7 @@ public class StrategyGenerator {
 		if (this.currentState.isInitial()){
 			res = new StrategySuccessOutput();
 		} else {
-			PropositionSet systemMove = new PropositionSet();
+			PropositionSet systemMove;
 
 			if (environmentInput instanceof PropositionSet){
 				PropositionSet environmentMove = (PropositionSet) environmentInput;

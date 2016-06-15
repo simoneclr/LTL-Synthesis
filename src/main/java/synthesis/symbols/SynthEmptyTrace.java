@@ -7,7 +7,7 @@ package synthesis.symbols;
  *
  * @author Simone Calciolari.
  */
-public class SynthEmptyTrace implements SynthTransitionLabel, SynthTraceInput {
+public class SynthEmptyTrace implements SynthTransitionLabel {
 
 	@Override
 	public boolean equals(Object o){

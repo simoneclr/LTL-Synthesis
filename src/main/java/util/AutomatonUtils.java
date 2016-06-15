@@ -12,7 +12,7 @@ import rationals.NoSuchStateException;
 import rationals.State;
 import rationals.Transition;
 import rationals.transformations.Reducer;
-import synthesis.*;
+import synthesis.symbols.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

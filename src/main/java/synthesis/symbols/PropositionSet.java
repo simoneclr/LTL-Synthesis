@@ -1,4 +1,4 @@
-package synthesis;
+package synthesis.symbols;
 
 import formula.ltlf.LTLfLocalVar;
 

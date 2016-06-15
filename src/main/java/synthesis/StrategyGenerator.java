@@ -3,6 +3,11 @@ package synthesis;
 import formula.ltlf.LTLfLocalVar;
 import rationals.Automaton;
 import rationals.State;
+import synthesis.maps.OutputFunction;
+import synthesis.symbols.PartitionedDomain;
+import synthesis.symbols.PartitionedWorldLabel;
+import synthesis.symbols.PropositionSet;
+import synthesis.symbols.SynthTraceInput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,10 +24,10 @@ public class StrategyGenerator {
 
 	private Automaton automaton;
 	private PartitionedDomain domain;
-	private HashMap<State, HashSet<PropositionSet>> outputFunction;
+	private OutputFunction outputFunction;
 	private State currentState;
 
-	public StrategyGenerator(Automaton automaton, PartitionedDomain domain, HashMap<State, HashSet<PropositionSet>> outputFunction){
+	public StrategyGenerator(Automaton automaton, PartitionedDomain domain, OutputFunction outputFunction){
 		this.automaton = automaton;
 		this.domain = domain;
 		this.outputFunction = outputFunction;

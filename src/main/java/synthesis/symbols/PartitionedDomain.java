@@ -1,8 +1,6 @@
-package synthesis;
+package synthesis.symbols;
 
 import formula.ltlf.LTLfLocalVar;
-
-import java.util.HashSet;
 
 /**
  * PartitionedDomain

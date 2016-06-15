@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -34,8 +35,60 @@ public class AutomatonUtils {
 		return new Reducer<>().transform(utils.AutomatonUtils.ldlf2Automaton(ldLfFormula, ldLfFormula.getSignature()));
 	}
 
+	public static Automaton removeUnreachableStates(Automaton original){
+		Automaton res = new Automaton();
+
+		Set<State> initials = original.initials();
+		HashMap<State, State> oldToNewStates = new HashMap<>();
+
+		for (State i : initials){
+			State newI = res.addState(i.isInitial(), i.isTerminal());
+			oldToNewStates.put(i, newI);
+		}
+
+		Set<State> toBeVisited = new HashSet<>();
+		toBeVisited.addAll(initials);
+
+		while (!toBeVisited.isEmpty()){
+			State oldStart = toBeVisited.iterator().next();
+			toBeVisited.remove(oldStart);
+
+			HashSet<State> newTBV = new HashSet<>();
+
+			Set<Transition> oldTransitions = original.delta(oldStart);
+
+			for (Transition oldT : oldTransitions){
+				State oldEnd = oldT.end();
+				State newEnd = oldToNewStates.get(oldEnd);
+
+				if (newEnd == null){
+					newEnd = res.addState(oldEnd.isInitial(), oldEnd.isTerminal());
+					oldToNewStates.put(oldEnd, newEnd);
+					newTBV.add(oldEnd);
+				}
+
+				Transition newT = new Transition(oldToNewStates.get(oldStart), oldT.label(), newEnd);
+
+				try {
+					res.addTransition(newT);
+				} catch (NoSuchStateException e) {
+					e.printStackTrace();
+				}
+			}
+
+			toBeVisited.addAll(newTBV);
+		}
+
+		return res;
+	}
+
 	public static Automaton transalteToGameAutomaton(Automaton original, PartitionedDomain domain){
 		Automaton res = new Automaton();
+
+		//Remove emptyTrace transitions
+		original = utils.AutomatonUtils.eliminateEmptyTrace(original);
+
+		original = removeUnreachableStates(original);
 
 		PropositionSet environment = domain.getEnvironmentDomain();
 		PropositionSet system = domain.getSystemDomain();

@@ -35,7 +35,9 @@ public class StrategyGenerator {
 	public StrategyOutput step(SynthTraceInput environmentInput){
 		StrategyOutput res;
 
-		if (this.currentState.isInitial()){
+		System.out.println(this.currentState);
+
+		if (this.currentState.isTerminal()){
 			res = new StrategySuccessOutput();
 		} else {
 			PropositionSet systemMove;

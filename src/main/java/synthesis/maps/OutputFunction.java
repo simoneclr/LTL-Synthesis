@@ -1,6 +1,7 @@
 package synthesis.maps;
 
 import rationals.State;
+import synthesis.symbols.Interpretation;
 import synthesis.symbols.PropositionSet;
 
 import java.util.HashMap;
@@ -13,5 +14,5 @@ import java.util.HashSet;
  *
  * @author Simone Calciolari.
  */
-public class OutputFunction extends HashMap<State, HashSet<PropositionSet>> {
+public class OutputFunction extends HashMap<State, HashSet<Interpretation>> {
 }

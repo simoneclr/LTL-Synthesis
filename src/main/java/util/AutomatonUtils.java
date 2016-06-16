@@ -171,9 +171,9 @@ public class AutomatonUtils {
 		ps.close();
 	}
 
-	private static PartitionedWorldLabel partitionPossibleWorld(PossibleWorldWrap pw, PartitionedDomain domain){
-		PropositionSet environment = new PropositionSet();
-		PropositionSet system = new PropositionSet();
+	private static PartitionedInterpretation partitionPossibleWorld(PossibleWorldWrap pw, PartitionedDomain domain){
+		Interpretation environment = new Interpretation();
+		Interpretation system = new Interpretation();
 
 		for (Proposition p : pw){
 			LTLfLocalVar lv = new LTLfLocalVar(p);
@@ -187,6 +187,6 @@ public class AutomatonUtils {
 			}
 		}
 
-		return new PartitionedWorldLabel(environment, system);
+		return new PartitionedInterpretation(environment, system);
 	}
 }

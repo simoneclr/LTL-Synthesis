@@ -7,8 +7,6 @@ import synthesis.maps.OutputFunction;
 import synthesis.symbols.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -38,10 +36,10 @@ public class StrategyGenerator {
 		if (this.currentState.isTerminal()){
 			res = new StrategySuccessOutput();
 		} else {
-			PropositionSet systemMove;
+			Interpretation systemMove;
 
 			if (environmentInput instanceof PropositionSet){
-				PropositionSet environmentMove = (PropositionSet) environmentInput;
+				Interpretation environmentMove = (Interpretation) environmentInput;
 
 				for (LTLfLocalVar v : environmentMove){
 					if (this.domain.getSystemDomain().contains(v)){
@@ -53,7 +51,7 @@ public class StrategyGenerator {
 
 				systemMove = this.outputFunction.get(this.currentState).iterator().next();
 
-				PartitionedWorldLabel label = new PartitionedWorldLabel(environmentMove, systemMove);
+				PartitionedInterpretation label = new PartitionedInterpretation(environmentMove, systemMove);
 				Set<State> currentStateSet = this.automaton.getStateFactory().stateSet();
 				currentStateSet.add(this.currentState);
 				Set<State> arrivalStates = this.automaton.step(currentStateSet, label);

@@ -11,7 +11,7 @@ import java.util.HashSet;
  *
  * @author Simone Calciolari.
  */
-public class PropositionSet extends HashSet<LTLfLocalVar> implements SynthTraceInput, StrategyOutput {
+public class PropositionSet extends HashSet<LTLfLocalVar> {
 	@Override
 	public String toString(){
 		return super.toString();

@@ -93,9 +93,10 @@ public class SynthesisAutomaton {
 									newLabel = new SynthEmptyTrace();
 								}*/
 							} else {
-								PartitionedWorldLabel oldPwl = (PartitionedWorldLabel) oldLabel;
-								if (this.outputFunction.get(oldStart).contains(oldPwl.getSystemDomain())){
-									newLabel = new PartitionedWorldLabel(oldPwl.getEnvironmentDomain(), oldPwl.getSystemDomain());
+								PartitionedInterpretation oldPwl = (PartitionedInterpretation) oldLabel;
+								if (this.outputFunction.get(oldStart).contains(oldPwl.getSystemInterpretation())){
+									newLabel = new PartitionedInterpretation(oldPwl.getEnvironmentInterpretation(),
+											oldPwl.getSystemInterpretation());
 								}
 							}
 
@@ -138,7 +139,7 @@ public class SynthesisAutomaton {
 			nonWinningStates.removeAll(winningStates);
 
 			for (State s : nonWinningStates){
-				for (PropositionSet y : transitionMap.get(s).keySet()){
+				for (Interpretation y : transitionMap.get(s).keySet()){
 					if (winningStates.containsAll(this.transitionMap.get(s).get(y))){
 						newWinningStates.add(s);
 						this.outputFunction.putIfAbsent(s, new HashSet<>());
@@ -167,9 +168,9 @@ public class SynthesisAutomaton {
 				SynthTransitionLabel label = t.label();
 				State endState = t.end();
 
-				if (label instanceof PartitionedWorldLabel){
-					PropositionSet system = ((PartitionedWorldLabel) label).getSystemDomain();
-					PropositionSet environment = ((PartitionedWorldLabel) label).getEnvironmentDomain();
+				if (label instanceof PartitionedInterpretation){
+					Interpretation system = ((PartitionedInterpretation) label).getSystemInterpretation();
+					Interpretation environment = ((PartitionedInterpretation) label).getEnvironmentInterpretation();
 
 					transitionMap.get(s).putIfAbsent(system, new HashSet<>());
 					transitionMap.get(s).get(system).add(endState);
@@ -187,7 +188,7 @@ public class SynthesisAutomaton {
 		OutputFunction res = new OutputFunction();
 
 		for (State s : states){
-			for (PropositionSet y : transitionMap.get(s).keySet()){
+			for (Interpretation y : transitionMap.get(s).keySet()){
 				if (states.containsAll(this.transitionMap.get(s).get(y))){
 					res.putIfAbsent(s, new HashSet<>());
 					res.get(s).add(y);

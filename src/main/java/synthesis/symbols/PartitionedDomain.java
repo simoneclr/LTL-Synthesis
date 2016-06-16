@@ -3,7 +3,8 @@ package synthesis.symbols;
 import formula.ltlf.LTLfLocalVar;
 
 /**
- * PartitionedDomain
+ * Class that represents the domain partitioned into proposition controlled by the environment and
+ * propositions controlled by the system
  * <br>
  * Created by Simone Calciolari on 01/04/16.
  * @author Simone Calciolari.
@@ -13,11 +14,17 @@ public class PartitionedDomain {
 	private PropositionSet environmentDomain;
 	private PropositionSet systemDomain;
 
+	/**
+	 * Instantiates a new PartitionedDomain
+	 * @param environmentDomain the propositions controlled by the environment
+	 * @param systemDomain the propositions controlled by the system
+	 */
 	public PartitionedDomain(PropositionSet environmentDomain, PropositionSet systemDomain){
 
 		for (LTLfLocalVar x : environmentDomain){
 			if (systemDomain.contains(x)){
-				throw new RuntimeException("Proposition " + x + " cannot appear in both system and environment domain");
+				throw new RuntimeException("System and environment domain must be disjoint; " +
+						"Proposition " + x + " appears in both.");
 			}
 		}
 
@@ -46,6 +53,10 @@ public class PartitionedDomain {
 						"; System: " + this.systemDomain.toString();
 	}
 
+	/**
+	 * Retrieves the union of the system and environment partitions
+	 * @return a PropositionSet containing all the proposition in the domain
+	 */
 	public PropositionSet getCompleteDomain(){
 		PropositionSet res = new PropositionSet();
 		res.addAll(this.environmentDomain);
@@ -53,10 +64,18 @@ public class PartitionedDomain {
 		return res;
 	}
 
+	/**
+	 * Retrieves the propositions of the domain controlled by the environment
+	 * @return a PropositionSet containing the propositions controlled by the environment
+	 */
 	public PropositionSet getEnvironmentDomain(){
 		return environmentDomain;
 	}
 
+	/**
+	 * Retrieves the propositions of the domain controlled by the system
+	 * @return a PropositionSet containing the propositions controlled by the system
+	 */
 	public PropositionSet getSystemDomain(){
 		return systemDomain;
 	}

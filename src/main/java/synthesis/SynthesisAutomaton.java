@@ -18,6 +18,9 @@ import static util.AutomatonUtils.*;
 
 /**
  * SynthesisAutomaton
+ * Class that handles all the information and computation required to solve the realizability-synthesis
+ * problem for a given LTL formula, given the partition of domain between propositions controlled by the
+ * environment and by the system
  * <br>
  * Created by Simone Calciolari on 01/04/16.
  * @author Simone Calciolari.
@@ -34,6 +37,11 @@ public class SynthesisAutomaton {
 	private HashSet<State> winningStates;
 	private boolean realizable;
 
+	/**
+	 * Instantiates a new SynthesisAutomaton.
+	 * @param domain the domain of the problem, partitioned in propositions controlled by the environment and by the system
+	 * @param formula the LTL formula that serves as specification for the synthesis problem
+	 */
 	public SynthesisAutomaton(PartitionedDomain domain, LTLfFormula formula){
 		this.domain = domain;
 
@@ -53,6 +61,10 @@ public class SynthesisAutomaton {
 		this.realizable = this.computeRealizability();
 	}
 
+	/**
+	 * Returns the solutions (if they exist) for the current problem
+	 * @return a StrategyGenerator that carries the solutions to the current problem (if they exist); null otherwise
+	 */
 	public StrategyGenerator getStrategyGenerator(){
 		if (this.isRealizable()){
 			Automaton strategyAutomaton = new Automaton();

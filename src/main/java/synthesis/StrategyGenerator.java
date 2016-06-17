@@ -40,6 +40,13 @@ public class StrategyGenerator {
 		this.lastStrategyOutput = null;
 	}
 
+	/**
+	 * This method returns the action that the system should perform for the first turn.
+	 * If the initial state is also terminal, returns a SUCCESS output, meaning that the game is already won.
+	 * <b>NOTE:</b> this method <strong>MUST</strong> be called <strong>EXACTLY ONCE</strong>
+	 * at the beginning of every new game, and only at the beginning.
+	 * @return A StrategyOutput containing tha first move the system should perform, or SUCCESS if the game is won.
+	 */
 	public StrategyOutput getFirstMove(){
 		StrategyOutput res;
 
@@ -58,6 +65,17 @@ public class StrategyGenerator {
 		return res;
 	}
 
+	/**
+	 * Used at the end of a turn to proceed to the next state of the game, and returns the action the system
+	 * should perform at the next turn.
+	 * I.E. if the turn succession is (X_0, Y_0)...(X_n, Y_n), where X_i are the environment moves and Y_i the system ones,
+	 * this method takes X_i as input and returns Y_(i+1) as output.
+	 * <b>NOTE:</b> when starting a new game, method getFirstMove() <strong>MUST</strong>
+	 * be called <strong>EXACTLY ONCE</strong> before calling this method.
+	 * @param environmentInput the action performed by the environment during the current turn.
+	 * @return a StrategyOutput representing the action the system should perform the next turn,
+	 * or SUCCESS if the game is won.
+	 */
 	public StrategyOutput step(SynthTraceInput environmentInput){
 		StrategyOutput res;
 
@@ -123,13 +141,17 @@ public class StrategyGenerator {
 	}
 
 	/**
-	 * resets the execution to the initial state of the automaton
+	 * Resets the execution of the game to the initial state.
 	 */
 	public void resetExecution(){
 		this.currentState = (State) this.automaton.initials().iterator().next();
 		this.lastStrategyOutput = null;
 	}
 
+	/**
+	 * Returns the strategy automaton, that represents all the possible strategies for the current problem.
+	 * @return an Automaton representing all the possible strategies for the problem at hand.
+	 */
 	public Automaton getAutomaton(){
 		return automaton;
 	}

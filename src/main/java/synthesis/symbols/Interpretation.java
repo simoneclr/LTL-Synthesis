@@ -8,5 +8,5 @@ package synthesis.symbols;
  *
  * @author Simone Calciolari.
  */
-public class Interpretation extends PropositionSet  implements SynthTraceInput, StrategyOutput {
+public class Interpretation extends PropositionSet implements SynthTraceInput, StrategyOutput {
 }

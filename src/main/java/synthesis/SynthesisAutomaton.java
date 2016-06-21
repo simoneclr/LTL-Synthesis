@@ -77,7 +77,15 @@ public class SynthesisAutomaton {
 
 		this.realizable = this.computeRealizability();
 	}
+	public SynthesisAutomaton(Automaton automaton, PartitionedDomain domain){
+		this.domain = domain;
 
+		this.automaton = transalteToGameAutomaton(automaton, domain);
+
+		this.computeTransitionMaps();
+
+		this.realizable = this.computeRealizability();
+	}
 	/**
 	 * Returns the solutions (if they exist) for the current problem
 	 * @return a StrategyGenerator that carries the solutions to the current problem (if they exist); null otherwise

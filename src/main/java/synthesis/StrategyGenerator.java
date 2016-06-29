@@ -7,6 +7,7 @@ import synthesis.maps.OutputFunction;
 import synthesis.symbols.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -72,9 +73,10 @@ public class StrategyGenerator {
 				res = new StrategySuccessOutput();
 			} else {
 				//Get first winning move from initial state
-				res = this.outputFunction.get(this.currentState).iterator().next();
-				this.lastStrategyOutput = res;
+				res = getRandomInterpretation(this.outputFunction.get(this.currentState));
 			}
+
+			this.lastStrategyOutput = res;
 		} else {
 			throw new RuntimeException("Cannot perform this action in the current state");
 		}
@@ -145,7 +147,7 @@ public class StrategyGenerator {
 					res = new StrategySuccessOutput();
 				} else {
 					//Select and return next strategy move from the new current state
-					this.lastStrategyOutput = this.outputFunction.get(this.currentState).iterator().next();
+					this.lastStrategyOutput = getRandomInterpretation(this.outputFunction.get(this.currentState));
 					res = this.lastStrategyOutput;
 				}
 
@@ -163,6 +165,11 @@ public class StrategyGenerator {
 	public void resetExecution(){
 		this.currentState = (State) this.automaton.initials().iterator().next();
 		this.lastStrategyOutput = null;
+	}
+
+	private Interpretation getRandomInterpretation(HashSet<Interpretation> interpretations){
+		//TODO return actual random interpretation
+		return interpretations.iterator().next();
 	}
 
 	/**
